@@ -1,0 +1,127 @@
+#include <iostream>
+#include <cmath>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <atomic>
+#include <SFML/Graphics.hpp>
+
+// Constants for GUI window size
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
+
+// Constants for telescope movement
+const double MOVE_SPEED = 0.1; // Adjust the speed as needed
+const double ANGLE_STEP = 0.1; // Adjust the step size as needed
+
+// Mutex to synchronize telescope movement
+std::mutex movementMutex;
+
+// Atomic flags for telescope movement
+std::atomic<bool> moveNorth(false);
+std::atomic<bool> moveSouth(false);
+std::atomic<bool> moveEast(false);
+std::atomic<bool> moveWest(false);
+
+// Function to move the telescope
+void moveTelescope()
+{
+    while (true)
+    {
+        // Check movement flags and perform corresponding movements
+        if (moveNorth)
+        {
+            std::lock_guard<std::mutex> lock(movementMutex);
+            // Code to move the telescope north on the declination axis
+            std::cout << "Moving telescope north..." << std::endl;
+            // Perform necessary actions for telescope movement
+            moveNorth = false; // Reset the flag
+        }
+
+        if (moveSouth)
+        {
+            std::lock_guard<std::mutex> lock(movementMutex);
+            // Code to move the telescope south on the declination axis
+            std::cout << "Moving telescope south..." << std::endl;
+            // Perform necessary actions for telescope movement
+            moveSouth = false; // Reset the flag
+        }
+
+        if (moveEast)
+        {
+            std::lock_guard<std::mutex> lock(movementMutex);
+            // Code to move the telescope east on the right ascension axis
+            std::cout << "Moving telescope east..." << std::endl;
+            // Perform necessary actions for telescope movement
+            moveEast = false; // Reset the flag
+        }
+
+        if (moveWest)
+        {
+            std::lock_guard<std::mutex> lock(movementMutex);
+            // Code to move the telescope west on the right ascension axis
+            std::cout << "Moving telescope west..." << std::endl;
+            // Perform necessary actions for telescope movement
+            moveWest = false; // Reset the flag
+        }
+
+        // Adjust the sleep duration to control the movement speed
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+int main()
+{
+    // Create a GUI window
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Telescope Control");
+    window.setFramerateLimit(60);
+
+    // Start the telescope movement thread
+    std::thread movementThread(moveTelescope);
+
+    // GUI event loop
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+
+            // Handle keyboard events for telescope movement
+            if (event.type == sf::Event::KeyPressed)
+            {
+                switch (event.key.code)
+                {
+                    case sf::Keyboard::Up:
+                        moveNorth = true;
+                        break;
+                    case sf::Keyboard::Down:
+                        moveSouth = true;
+                        break;
+                    case sf::Keyboard::Left:
+                        moveWest = true;
+                        break;
+                    case sf::Keyboard::Right:
+                        moveEast = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Clear the window
+        window.clear(sf::Color::Black);
+
+        // Draw GUI elements or telescope position visualization
+
+        // Display the updated window
+        window.display();
+    }
+
+    // Wait for the movement thread to finish
+    movementThread.join();
+
+    return 0;
+}
